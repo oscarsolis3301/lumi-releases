@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Download LUMI</title>
+<style>
+  :root { --purple:#7c3aed; --deep:#2b1066; --ink:#1a1530; --muted:#6b6480; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body {
+    font-family:"Segoe UI",-apple-system,system-ui,sans-serif; color:var(--ink);
+    background:radial-gradient(1200px 600px at 50% -10%, #f3eefe 0%, #ffffff 60%);
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:24px;
+  }
+  .card { max-width:460px; }
+  .orb {
+    width:64px; height:64px; border-radius:50%; margin:0 auto 18px;
+    background:radial-gradient(circle at 32% 28%, #c9b8ff 0%, var(--purple) 46%, var(--deep) 100%);
+    box-shadow:0 8px 30px rgba(124,58,237,0.4);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.06);opacity:.85} }
+  h1 { font-size:26px; margin:0 0 6px; letter-spacing:-0.02em; }
+  p { color:var(--muted); font-size:15px; line-height:1.55; margin:0 0 18px; }
+  .ver { font-family:"Cascadia Code","Consolas",monospace; color:var(--purple); font-weight:600; }
+  .btn {
+    display:inline-block; background:var(--purple); color:#fff; text-decoration:none;
+    font-weight:600; font-size:15px; padding:12px 26px; border-radius:12px;
+    box-shadow:0 6px 20px rgba(124,58,237,0.35); transition:filter .15s;
+  }
+  .btn:hover { filter:brightness(1.07); }
+  .alt { display:block; margin-top:16px; font-size:13px; }
+  .alt a { color:var(--muted); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="orb" aria-hidden="true"></div>
+    <h1>LUMI</h1>
+    <p id="msg">Finding the latest version…</p>
+    <a id="btn" class="btn" style="display:none" href="#">Download</a>
+    <span class="alt"><a href="https://github.com/oscarsolis3301/lumi-releases/releases/latest">View all releases</a></span>
+  </div>
+<script>
+  (async () => {
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+    const REPO = 'oscarsolis3301/lumi-releases';
+    try {
+      const r = await fetch('https://api.github.com/repos/' + REPO + '/releases/latest',
+        { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) throw new Error('http ' + r.status);
+      const rel = await r.json();
+      const exe = (rel.assets || []).find(a => /\.exe$/i.test(a.name) && !/\.blockmap$/i.test(a.name));
+      if (!exe) throw new Error('no installer asset');
+      const url = exe.browser_download_url;
+      msg.innerHTML = 'Downloading <span class="ver">' + exe.name + '</span>…';
+      btn.href = url; btn.style.display = 'inline-block';
+      btn.textContent = 'Download ' + exe.name;
+      // Auto-start the download.
+      location.href = url;
+    } catch (e) {
+      msg.innerHTML = "Couldn't fetch the latest build automatically.";
+      btn.href = 'https://github.com/' + REPO + '/releases/latest';
+      btn.style.display = 'inline-block';
+      btn.textContent = 'Go to releases';
+    }
+  })();
+</script>
+</body>
+</html>
